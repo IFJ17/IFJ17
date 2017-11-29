@@ -1,4 +1,4 @@
-typedef enum
+typedef enum     //zapiseme vsechny stavy
 {
     START,
     KLIC_SLOVO,
@@ -36,9 +36,13 @@ typedef enum
     RETEZEC01,
 } tStav;
 
-int sloupec, error;
 
-typedef struct
+
+int sloupec, radek, error;  //deklarace promenych
+
+
+
+typedef struct       //vytvoreni struktury kam ukladame vysledky
 {
     tStav stav;
     char *data;
@@ -50,9 +54,8 @@ typedef struct
 extern tToken token;
 
 
-tToken getToken(void);
 
-#include <stdio.h>
+#include <stdio.h>    //knihovny
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
@@ -62,24 +65,25 @@ tToken getToken(void);
 #define POKRACUJ 0
 #define STOP 1
 
-static void rozsirToken(int znak, int *i);
+static void rozsirToken(int znak, int *i);   //prototypy funkci
 static void vratZnak(int znak);
 static tStav prejdiRezervovaneSlova(char *slovo);
+tToken getToken(void);
 
-char *klucoveSlova[POCET_KLUCOVYCH_SLOV] =
+char *klucoveSlova[POCET_KLUCOVYCH_SLOV] =    //pole klicovych slov
 {
-    "As\0, Asc\0, Declare\0, Dim\0, Do\0, Double\0, Else\0, End\0, Chr\0",
-    "Function\0, If\0, Input\0, Integer\0, Length\0, Loop\0, Print\0, Return\0",
-    "Scope\0, String\0, SubStr\0, Then\0, While\0"
+    "as\0, asc\0, declare\0, dim\0, do\0, double\0, else\0, end\0, chr\0",
+    "function\0, if\0, input\0, integer\0, length\0, loop\0, print\0, return\0",
+    "scope\0, string\0, subStr\0, then\0, while\0"
 };
 
-char *rezervovaneSlova[POCET_REZERVOVANYCH_SLOV] =
+char *rezervovaneSlova[POCET_REZERVOVANYCH_SLOV] =       //pole rezervovanych slov
 {
-    "And\0, Boolean\0, Continue\0, Elseif\0, Exit\0, False\0, For\0, Next\0",
-    "Not\0, Or\0, Shared\0, Static\0, True\0"
+    "and\0, boolean\0, continue\0, elseif\0, exit\0, false\0, for\0, next\0",
+    "not\0, or\0, shared\0, static\0, true\0"
 };
 
-static void rozsirToken(int znak, int *i)
+static void rozsirToken(int znak, int *i)   //funkce nacte do dat znak tokenu
 {
 
     if ((token.data = (char *) advRealloc(token.data, (*i) + 2)))
@@ -93,7 +97,7 @@ static void rozsirToken(int znak, int *i)
 }
 
 
-static void vratZnak(int znak)
+static void vratZnak(int znak)    //funkce vrati nacteny znak
 {
 
     if (!isspace(znak))
@@ -104,7 +108,7 @@ static void vratZnak(int znak)
         sloupec--;
 }
 
-static tStav prejdiRezervovaneSlova(char *slovo)
+static tStav prejdiRezervovaneSlova(char *slovo)    //funkce zjisti zda se jedna o identifikator, klicove nebo rezervovane slovo
 {
     int j;
 
@@ -121,13 +125,13 @@ static tStav prejdiRezervovaneSlova(char *slovo)
     return IDENTIFIK;
 }
 
-tToken getToken()
+tToken getToken()     //funkce prochazi souborem, nacita token a urcuje jeho typ
 {
 
-tStav stav = START;
+tStav stav = START;   //inicializujeme promene
 int pokracuj = 0;
 int i = 0;
-int c, znak, radek;
+int c, znak;
 
 token.stav = START;
 token.data = NULL;
@@ -136,16 +140,15 @@ token.sloupec = sloupec;
 
 
 
-
-while (pokracuj == 0)
+while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
 {
-    znak = getc(soubor);
+    znak = getc(soubor);  //nacteme znak
 
-    switch (stav)
+    switch (stav)    //automat, ktery urcuje stav a kdy se ma cyklus zastavit
     {
-        case(START);
+        case START:
         {
-            if ((isalpha(znak)) || (znak == '_'))  stav = IDENTIFIK;
+            if ((isalpha(znak)) || (znak == '_'))  stav = IDENTIFIK;   //stavy, kdy znak zapiseme
             else if (isdigit(znak))                stav = INTEGER;
             else if (znak == '=')                  stav = PRIRAZENI;
             else if (znak == ';')                  stav = STREDNIK;
@@ -160,7 +163,7 @@ while (pokracuj == 0)
             else if (znak == '>')                  stav = VETSI;
             else if (znak == '<')                  stav = MENSI;
             else if (znak == EOF)                  stav = ENDOFFILE;
-            else if (znak == '\n')                 stav = EOL;
+            else if (znak == '\n')                 stav = EOL;       //stavy, kdy znak nezapiseme
             else if (znak == 39)      //  '
             {
                 stav = RADK_KOMENT;
@@ -171,28 +174,28 @@ while (pokracuj == 0)
                 stav = RETEZEC01;
                 break;
             }
-            else if (isspace(znak))
+            else if (isspace(znak))    //prazdna mista se ignoruji
             {
                 stav = START;
                 break;
             }
-            else
+            else                     //cokoliv jineho znamena chybu
             {
                 stav = CHYBA;
                 break;
             }
 
-            rozsirToken(znak, &i);
+            rozsirToken(znak, &i);    //zapsani znaku
             break;
 
         }
-        case IDENTIFIK:
+        case IDENTIFIK:         //zkoumame zda dalsi nacteny znak je cislo, pismeno nebo podtrzitko 
         {
 
-            if ((isalpha(znak) || isdigit(znak) || (znak == '_')))
+            if ((isalpha(znak) || isdigit(znak) || (znak == '_')))   //pokud ano cyklus se opakuje
             {
                 stav = IDENTIFIK;
-                if (znak>64 && znak<91)
+                if (znak>64 && znak<91)  //pokud je znak velke pismeno zmensi se
                 {
                     znak += ('a'-'A');
                 }
@@ -201,7 +204,7 @@ while (pokracuj == 0)
 
             else
             {
-                token.stav = prejdiRezervovaneSlova(token.data);
+                token.stav = prejdiRezervovaneSlova(token.data);  //pokud ne cyklus se ukonci a znak se vrati
                 pokracuj = 1;
                 vratZnak((char) znak);
             }
@@ -210,19 +213,19 @@ while (pokracuj == 0)
         }
 
 
-        case INTEGER:
+        case INTEGER:  
         {
-            if (isdigit(znak))
+            if (isdigit(znak))   //pokud nasleduje cislo, je to integer
             {
                 stav = INTEGER;
                 rozsirToken(znak, &i);
             }
-            else if (znak == '.')
+            else if (znak == '.')   //pokud . je to double
             {
                 stav = DOUBLE_KONTR;
                 rozsirToken(znak, &i);
             }
-            else if ((znak == 'e') || (znak == 'E'))
+            else if ((znak == 'e') || (znak == 'E'))   //pokud e nebo E je to exponencialni cislo
             {
                 stav = EXP_KONTR;
                 rozsirToken(znak, &i);
@@ -237,7 +240,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case DOUBLE_KONTR:
+        case DOUBLE_KONTR:   //kontrolujeme zda za teckou je cislo
         {
             if (isdigit(znak))
             {
@@ -246,7 +249,7 @@ while (pokracuj == 0)
             }
             else
             {
-                token.stav = stav;
+                token.stav = stav;   //pokud ne je to chyba
                 stav = CHYBA;
                 vratZnak((char) znak);
             }
@@ -256,12 +259,12 @@ while (pokracuj == 0)
 
         case DOUBLE:
         {
-            if (isdigit(znak))
+            if (isdigit(znak))   
             {
                 stav = DOUBLE;
                 rozsirToken(znak, &i);
             }
-            else if ((znak == 'e') || (znak == 'E'))
+            else if ((znak == 'e') || (znak == 'E'))  //i z doublu se muze stat exp cislo
             {
                 stav = EXP_KONTR;
                 rozsirToken(znak, &i);
@@ -278,19 +281,19 @@ while (pokracuj == 0)
 
         case EXP_KONTR:
         {
-            if ((znak == '-') || (znak == '+'))
+            if ((znak == '-') || (znak == '+'))   //za e nebo E muze byt + nebo -
             {
                 stav = EXP_KONTR02;
                 rozsirToken(znak, &i);
             }
-            else if (isdigit(znak))
+            else if (isdigit(znak))        //pokud nejsou, tak tam musi byt cislo
             {
                 stav = EXP;
                 rozsirToken(znak, &i);
             }
             else
             {
-                token.stav = stav;
+                token.stav = stav;      //cokoliv jineho je chyba
                 stav = CHYBA;
                 vratZnak((char) znak);
             }
@@ -300,14 +303,14 @@ while (pokracuj == 0)
 
         case EXP_KONTR02:
         {
-            if (isdigit(znak))
+            if (isdigit(znak))   //za + nebo - musi byt cislo 
             {
                 stav = EXP;
                 rozsirToken(znak, &i);
             }
             else
             {
-                token.stav = stav;
+                token.stav = stav;  //jinak chyba
                 stav = CHYBA;
                 vratZnak((char) znak);
             }
@@ -315,7 +318,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case EXP:
+        case EXP:            //cokoliv jineho nez cislo znamena konec cyklu
         {
             if (isdigit(znak))
             {
@@ -333,7 +336,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case DELENO_DESET:
+        case DELENO_DESET:    //pokud za znakem / nasleduje ' je to blokovy komentar
         {
             if (znak == 39)
             {
@@ -350,7 +353,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case PRIRAZENI:
+        case PRIRAZENI:  //pokud za znakem je = je to prirovnani
         {
             if (znak == '=')
             {
@@ -368,7 +371,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case VETSI:
+        case VETSI:   //pokud za znakem je = je to vetsi nebo rovno
         {
             if (znak == '=')
             {
@@ -386,7 +389,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case MENSI:
+        case MENSI:  //pokud za znakem je = je to mensi nebo rovno
         {
             if (znak == '=')
             {
@@ -394,7 +397,7 @@ while (pokracuj == 0)
                 rozsirToken(znak, &i);
             }
 
-            else if (znak == '>')
+            else if (znak == '>')   //pokud za znakem je > je to neni rovno
             {
                 stav = NENI_ROVNO;
                 rozsirToken(znak, &i);
@@ -410,7 +413,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case KLIC_SLOVO:
+        case KLIC_SLOVO:  // zde jsou stavy kdy jenom vratime znak a cyklus ukoncime, protoze to co je za nimi nas nezajima
         case REZ_SLOVO:
         case PLUS:
         case MINUS:
@@ -433,15 +436,15 @@ while (pokracuj == 0)
             break;
         }
 
-        case RADK_KOMENT:
+        case RADK_KOMENT:         
         {
-            if (znak == '\n')
+            if (znak == '\n')   //dokud nenarazime na konec radku tak vse ignorujeme a automat se pote nastavi na start
             {
                 stav = START;
                 i = 0;
             }
 
-            else if (znak == EOF)
+            else if (znak == EOF)   //na konci komentare muze byz i EOF
             {
                 stav = ENDOFFILE;
             }
@@ -453,7 +456,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case BLOK_KOMENT:
+        case BLOK_KOMENT:    //ignorujeme vse krome '
         {
             if (znak == 39)
             {
@@ -470,18 +473,18 @@ while (pokracuj == 0)
 
         case BLOK_KOMENT02:
         {
-            if (c == '/')
+            if (c == '/')    //pokud narazime na / je to konec blok. komentare
             {
-                stav = START;
+                stav = START;    
                 i = 0;
             }
 
-            else if (c == 39)
+            else if (c == 39)   //pokud na ' zkoumame zda za nim neni /
             {
                 stav = BLOK_KOMENT02;
             }
 
-            else
+            else           //pokud nan neco jineho ignorujeme to a zacneme s hledanim znovu
             {
                 stav = BLOK_KOMENT;
             }
@@ -489,9 +492,9 @@ while (pokracuj == 0)
             break;
         }
 
-        case RETEZEC01:
+        case RETEZEC01: 
         {
-            if (c == '"')
+            if (c == '"')        //pokud za ! neni " je to chyba 
             {
                 stav = RETEZEC;
             }
@@ -506,7 +509,7 @@ while (pokracuj == 0)
             break;
         }
 
-        case RETEZEC:
+        case RETEZEC:      // nyni hledame dalsi ", vse statni zapiseme
         {
             if (c == '"')
             {
@@ -523,25 +526,19 @@ while (pokracuj == 0)
             break;
         }
 
-        case CHYBA:
+        case CHYBA:        //stav pro chybu
         {
             error = 1;
             pokracuj = 1;
             break;
         }
 
-       /* case KONEC:
-        {
-            vratZnak((char) znak);
-            pokracuj = 1;
-            break;
-        }*/
 
 
-        if (error)
+        if (error)        //pokud nastala chyba analyzator ukoncime
             break;
 
-        if (znak == '\n')
+        if (znak == '\n')   //pocitadla radku a sloupcu
         {
             radek++;
             sloupec = 1;
@@ -551,5 +548,6 @@ while (pokracuj == 0)
 
     }
 }
+
 return token;
 }
