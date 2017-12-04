@@ -534,19 +534,19 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
         }
 
 
-
-        if (error)        //pokud nastala chyba analyzator ukoncime
-            break;
-
-        if (znak == '\n')   //pocitadla radku a sloupcu
-        {
-            radek++;
-            sloupec = 1;
-        }
-        else if (isprint(znak))
-            sloupec++;
-
     }
+    if (error)        //pokud nastala chyba analyzator ukoncime
+        break;
+
+    if (znak == '\n')   //pocitadla radku a sloupcu
+    {
+        radek++;
+        sloupec = 1;
+    }
+    else if (isprint(znak))
+    sloupec++;
+
+    
 }
 
 return token;
