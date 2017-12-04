@@ -421,13 +421,13 @@ while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
 
         case BLOK_KOMENT02:
         {
-            if (c == '/')    //pokud narazime na / je to konec blok. komentare
+            if (znak == '/')    //pokud narazime na / je to konec blok. komentare
             {
                 stav = START;    
                 i = 0;
             }
 
-            else if (c == 39)   //pokud na ' zkoumame zda za nim neni /
+            else if (znak == 39)   //pokud na ' zkoumame zda za nim neni /
             {
                 stav = BLOK_KOMENT02;
             }
@@ -442,7 +442,7 @@ while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
 
         case RETEZEC01: 
         {
-            if (c == '"')        //pokud za ! neni " je to chyba 
+            if (znak == '"')        //pokud za ! neni " je to chyba 
             {
                 stav = RETEZEC;
             }
@@ -459,7 +459,7 @@ while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
 
         case RETEZEC:      // nyni hledame dalsi ", vse statni zapiseme
         {
-            if (c == '"')
+            if (znak == '"')
             {
                 token.stav = RETEZEC;
                 pokracuj = STOP;
@@ -468,7 +468,7 @@ while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 stav = RETEZEC;
-                rozsirToken(c, &i);
+                rozsirToken(znak, &i);
             }
 
             break;
