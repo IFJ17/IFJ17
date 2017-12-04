@@ -129,7 +129,7 @@ tToken getToken()     //funkce prochazi souborem, nacita token a urcuje jeho typ
 {
 
 tStav stav = START;   //inicializujeme promene
-int pokracuj = 0;
+int pokracuj = POKRACUJ;
 int i = 0;
 int c, znak;
 
@@ -140,7 +140,7 @@ token.sloupec = sloupec;
 
 
 
-while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
+while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
 {
     znak = getc(soubor);  //nacteme znak
 
@@ -205,7 +205,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = prejdiRezervovaneSlova(token.data);  //pokud ne cyklus se ukonci a znak se vrati
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -233,7 +233,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -272,7 +272,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -329,7 +329,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -346,7 +346,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -364,7 +364,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -382,7 +382,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -406,7 +406,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             else
             {
                 token.stav = stav;
-                pokracuj = 1;
+                pokracuj = STOP;
                 vratZnak((char) znak);
             }
 
@@ -431,7 +431,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
         case STREDNIK:
         {
             token.stav = stav;
-            pokracuj = 1;
+            pokracuj = STOP;
             vratZnak((char) znak);
             break;
         }
@@ -514,7 +514,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
             if (c == '"')
             {
                 token.stav = RETEZEC;
-                pokracuj = 1;
+                pokracuj = STOP;
             }
 
             else
@@ -529,7 +529,7 @@ while (pokracuj == 0)   //cyklus bude nacitat znaky dokud ho nezastavime
         case CHYBA:        //stav pro chybu
         {
             error = 1;
-            pokracuj = 1;
+            pokracuj = STOP;
             break;
         }
 
