@@ -1,5 +1,3 @@
-int sloupec, radek, error;  //deklarace promenych
-
 #include <stdio.h>    //knihovny
 #include <ctype.h>
 //#include "garbage_collector.h"
@@ -78,7 +76,7 @@ tToken getToken()     //funkce prochazi souborem, nacita token a urcuje jeho typ
 tStav stav = START;   //inicializujeme promene
 int pokracuj = POKRACUJ;
 int i = 0;
-int c, znak;
+int znak;
 
 token.stav = START;
 token.data = NULL;
@@ -95,6 +93,9 @@ while (pokracuj == POKRACUJ)   //cyklus bude nacitat znaky dokud ho nezastavime
     {
         case START:
         {
+            token.radek = radek;
+            token.sloupec = sloupec;
+            
             if ((isalpha(znak)) || (znak == '_'))  stav = IDENTIFIK;   //stavy, kdy znak zapiseme
             else if (isdigit(znak))                stav = INTEGER;
             else if (znak == '=')                  stav = PRIRAZENI;
