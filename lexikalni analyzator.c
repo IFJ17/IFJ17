@@ -1,64 +1,12 @@
-typedef enum     //zapiseme vsechny stavy
-{
-    START,
-    KLIC_SLOVO,
-    REZ_SLOVO,
-    CHYBA,
-    IDENTIFIK,
-    INTEGER,
-    DOUBLE_KONTR,
-    DOUBLE,
-    EXP_KONTR,
-    EXP_KONTR02,
-    EXP,
-    STREDNIK,
-    PRIRAZENI,
-    LEVA_ZAVORKA,
-    PRAVA_ZAVORKA,
-    CARKA,
-    PLUS,
-    MINUS,
-    KRAT,
-    DELENO_DESET,
-    DELENO_CELY,
-    VETSI,
-    MENSI,
-    JE_ROVNO,
-    VETSI_ROVNO,
-    MENSI_ROVNO,
-    NENI_ROVNO,
-    ENDOFFILE,
-    EOL,
-    RADK_KOMENT,
-    BLOK_KOMENT,
-    BLOK_KOMENT02,
-    RETEZEC,
-    RETEZEC01,
-} tStav;
-
-
-
 int sloupec, radek, error;  //deklarace promenych
-
-
-
-typedef struct       //vytvoreni struktury kam ukladame vysledky
-{
-    tStav stav;
-    char *data;
-    int radek;
-    int sloupec;
-} tToken;
-
-
-extern tToken token;
-
-
 
 #include <stdio.h>    //knihovny
 #include <ctype.h>
+//#include "garbage_collector.h"
 #include <string.h>
 #include <stdlib.h>
+#include "lexikalni_analyzator.h"
+#include "funkce.h"
 
 #define POCET_KLUCOVYCH_SLOV 22
 #define POCET_REZERVOVANYCH_SLOV 13
@@ -68,7 +16,6 @@ extern tToken token;
 static void rozsirToken(int znak, int *i);   //prototypy funkci
 static void vratZnak(int znak);
 static tStav prejdiRezervovaneSlova(char *slovo);
-tToken getToken(void);
 
 char *klucoveSlova[POCET_KLUCOVYCH_SLOV] =    //pole klicovych slov
 {
