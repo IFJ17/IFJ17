@@ -79,6 +79,17 @@ tSymbol *TSvlozDouble(tNazov nazev, double data)
     return TSvlozSymbol(symbol);
 }
 
+tSymbol *TSvlozInt(tNazov nazev, int data)
+{
+    tSymbol symbol;
+
+    symbol.nazev = nazev;
+    symbol.typ = tInt;
+    symbol.value.i = data;
+
+    return TSvlozSymbol(symbol);
+}
+
 tSymbol *TSvlozString(tNazov nazev, char *string)
 {
     tSymbol symbol;
