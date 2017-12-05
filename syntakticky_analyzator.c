@@ -1,4 +1,13 @@
-
+/**
+ * Predmet: IFJ / IAL
+ * Projekt: Implementace prekladace imperativniho jazyka IFJ17
+ * Varianta:Tym 031, varianta I
+ * Soubor:   syntakticky_analyzator.c
+ * Autori:  Kozouskova Aneta	<xkozou00@stud.fit.vutbr.cz>,
+ *          Sencuch Filip	    <xsencu01@stud.fit.vutbr.cz>,
+ *          Nguyen QuangTrang	<xnguye11@stud.fit.vutbr.cz>,
+ *          Pribyl Tomas	    <xpriby17@stud.fit.vutbr.cz>
+ */
 
 #include <ctype.h>
 #include <math.h>
@@ -51,16 +60,8 @@ tError parser()
 {
     ta_Initialize(&ta);// init ta
     cislo_argumentu = advMalloc(sizeof(int));
-    if (cislo_argumentu == NULL)
-        {
-            return EOST;
-        }
     *(cislo_argumentu) = 1;
     pole_back = (int*)advMalloc(sizeof(int)*ALL_MORE);
-    if (pole_back == NULL)
-        {
-            return EOST;
-        }
     error = EOK;
     tToken token = getToken();
     if(token.stav == ENDOFFILE) //pokud je soubor prazdny, chyba
@@ -130,7 +131,7 @@ tError funkce()
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = true;
         char *nazev = token.data; //vlozim data
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         dataStromu.jump = label;
 
         if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -138,7 +139,7 @@ tError funkce()
         else TSvlozSymbol(dataStromu); //jinak vloz do tabulky
 
         functionNode = TSreadSymbol(nazev);
-        functionName = functionNode->data.nazov; //udelam si odkaz na jmeno soucasne funkce
+        functionName = functionNode->data.nazev; //udelam si odkaz na jmeno soucasne funkce
         functionNodeTmp = functionNode;
         for_return = functionNode;
 
@@ -217,7 +218,7 @@ tError funkce()
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = true;
         char *nazev = token.data; //vlozim data
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         dataStromu.jump = label;
         label++;
         if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -225,7 +226,7 @@ tError funkce()
         else TSvlozSymbol(dataStromu); //jinak vloz do tabulky
 
         functionNode = TSreadSymbol(nazev);
-        functionName = functionNode->data.nazov; //udelam si odkaz na jmeno soucasne funkce
+        functionName = functionNode->data.nazev; //udelam si odkaz na jmeno soucasne funkce
 
         if(error != EOK)
             return error;
@@ -284,7 +285,7 @@ tError funkce()
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = true;
         char *nazev = token.data; //vlozim data
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         dataStromu.jump = label;
 
         if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -292,7 +293,7 @@ tError funkce()
         else TSvlozSymbol(dataStromu); //jinak vloz do tabulky
 
         functionNode = TSreadSymbol(nazev);
-        functionName = functionNode->data.nazov; //udelam si odkaz na jmeno soucasne funkce
+        functionName = functionNode->data.nazev; //udelam si odkaz na jmeno soucasne funkce
         functionNodeTmp = functionNode;
         for_return = functionNode;
 
@@ -424,11 +425,11 @@ tError body()
 
 /**
  * <list>        ->  EPS
- * <list>	->  ID <prirazeni> ";" <list>
- * <list>	->  "print" <print> <list>
+ * <list>	->  ID <prirazeni> "eol"
+ * <list>	->  "print" <print>, <list>
  * <list>	->  "if" <expr> "then" "eol" <list> "else" "eol" <list> "end" "if" <list>
- * <list>	->  "while" <expr> "do" <list> "end" ";" <list>
- * <list>	->  "return" <expr> ";" <list>
+ * <list>	->  "dowhile" <expr> "eol" <list> "loop" "eol" <list>
+ * <list>	->  "return" <expr> "eol"
  */
 
 tError list()
@@ -507,10 +508,6 @@ tError list()
         }
 
         nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-        if (nazev == NULL)
-        {
-            return EOST;
-        }
         sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
 
         tmpNode = TSreadSymbol(nazev);
@@ -555,7 +552,7 @@ tError list()
 
             error = pparser(); //vyhodnotim podminku
 
-            ta_InsertJump(&ta,I_FJUMP,TSreadSymbol(neterm.data.nazov),else_label);
+            ta_InsertJump(&ta,I_FJUMP,TSreadSymbol(neterm.data.nazev),else_label);
 
             if(error != EOK)
                 return error;
@@ -577,7 +574,7 @@ tError list()
             if(error != EOK)
                 return error;
 
-            ta_InsertJump(&ta,I_JUMP,TSreadSymbol(neterm.data.nazov),end_label);
+            ta_InsertJump(&ta,I_JUMP,TSreadSymbol(neterm.data.nazev),end_label);
 
             ta_InsertJump(&ta,I_LABEL,NULL, else_label);
 
@@ -625,7 +622,7 @@ tError list()
 
             error = pparser();//////////////////////////////////
 
-            ta_InsertJump(&ta, I_FJUMP, TSreadSymbol(neterm.data.nazov), dowhile_end_label);
+            ta_InsertJump(&ta, I_FJUMP, TSreadSymbol(neterm.data.nazev), dowhile_end_label);
 
             if(error != EOK)
                 return error;
@@ -644,7 +641,7 @@ tError list()
             if(error != EOK)
                 return error;
 
-            ta_InsertJump(&ta, I_JUMP, TSreadSymbol(neterm.data.nazov), dowhile_label);
+            ta_InsertJump(&ta, I_JUMP, TSreadSymbol(neterm.data.nazev), dowhile_label);
 
             if((strcmp(token.data, "loop"))) //"end"
                 {
@@ -665,7 +662,7 @@ tError list()
                 */
         }
 
-        else if(!(strcmp(token.data, "return"))) //<list>	->  "return" <expr> "eol" <list>
+        else if(!(strcmp(token.data, "return"))) //<list>	->  "return" <expr> "eol"
         {
             getToken(); //EXPR
             if(token.stav != EOL)   //"eol"
@@ -675,12 +672,12 @@ tError list()
                 if(error != EOK)
                     return error;
 
-                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazov), NULL, for_return);
+                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazev), NULL, for_return);
 
                 if(error != EOK)
                     return error;
 
-                if(token.stav != EOL) //"\n"
+                if(token.stav != EOL) //"eol"
                 {
                     fprintf(stderr, "Ocekavan znak: \"\\n\"\n");
                     return ESYN;
@@ -712,7 +709,7 @@ tError list()
 
 
 /**
- * <print>		->	"(" <expr> ")" "\n"
+ * <print>		->	"(" <expr> ")" "eol"
  */
 tError print()
 {
@@ -731,7 +728,7 @@ tError print()
     if(error != EOK)
         return error;
 
-    if(token.stav != STREDNIK) //musi byt "\n"
+    if(token.stav != EOL) //musi byt "\n"
         return ESYN;
 
 
@@ -762,16 +759,11 @@ tError Input()
 
         nameID++; //prictu k pocitadlu
         char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-        if (nazev == NULL)
-        {
-            return EOST;
-        }
         sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
         tSymbol dataStromu; //vlozim do stromu jmeno funkce
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = false;
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
         if(token.stav == RETEZEC)
         {
@@ -961,13 +953,9 @@ tError varDeclar()
     TSinitSymbol(&dataStromu);
     dataStromu.varFc = false;
     char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-    if (nazev == NULL)
-        {
-            return EOST;
-        }
     sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
-    name.nazov = nazev;
-    dataStromu.nazov = nazev;
+    name.nazev = nazev;
+    dataStromu.nazev = nazev;
     if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
     {
         fprintf(stderr, "Identifikator: \"%s\" byl jiz deklarovan\n", token.data);
@@ -1019,7 +1007,7 @@ tError varDeclar()
             getToken();
             if (token.stav != PRIRAZENI)
             {
-                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazov), NULL, cilovaAdresa);
+                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazev), NULL, cilovaAdresa);
                 return error;
             }
             else// kdyz token je =
@@ -1034,7 +1022,7 @@ tError varDeclar()
             getToken();
             if (token.stav != PRIRAZENI)
             {
-                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazov), NULL , cilovaAdresa);
+                ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazev), NULL , cilovaAdresa);
                 return error;
             }
             else// kdyz token je =
@@ -1128,10 +1116,6 @@ tError litExpr() // muzeme priradit k promenne bud funkci, hodnotu promenne, hod
             if(tmpNode2 == NULL) //pokud jsem nenasel funkci
             {
                 nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
                 tmpNode2 = TSreadSymbol(nazev);
                 if(tmpNode2 == NULL) //pokud jsem NEnasel promennou
@@ -1196,7 +1180,7 @@ tError litExpr() // muzeme priradit k promenne bud funkci, hodnotu promenne, hod
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazov), NULL, cilovaAdresa);
+            ta_Insert(&ta, I_ASSIGN, TSreadSymbol(neterm.data.nazev), NULL, cilovaAdresa);
             if(error != EOK)
                 return error;
             if(token.stav != EOL) // "\n"
@@ -1231,23 +1215,19 @@ tError args()
                 if(error != EOK)
                     return error;
 
-                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
             }
             else
             {
                 isWriteFunc = true;
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
 
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 //dataStromu.typ = tDouble;
 
                 if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1279,10 +1259,6 @@ tError args()
         else if(isPrint == false) //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
             tBTSUzolPtr tmpNode = TSreadSymbol(nazev);
             if(tmpNode == NULL) //jmeno neni v tabulce
@@ -1310,23 +1286,18 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
 
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-                {
-                    return EOST;
-                }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1357,22 +1328,17 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1402,22 +1368,17 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string.
-            if (nazev == NULL)
-                {
-                    return EOST;
-                }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1446,22 +1407,17 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.s = token.data; //prevedu string na hodnotu
             dataStromu.typ = tString; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1492,22 +1448,17 @@ tError args()
                 if(error != EOK)
                     return error;
 
-                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
             }
             else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
             {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 if(!(strcmp(token.data, "true")))
                     dataStromu.value.b = true; //prevedu string na hodnotu
                 else dataStromu.value.b = false;
@@ -1540,7 +1491,7 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
@@ -1552,16 +1503,11 @@ tError args()
             {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 dataStromu.value.d = (atof(token.data))*(-1); //prevedu string na hodnotu
                 dataStromu.typ = tDouble; //typ je double
                 if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1585,7 +1531,7 @@ tError args()
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else return ESYN;
     }
@@ -1618,7 +1564,7 @@ tError argsNext()
 
     if(token.stav == IDENTIFIK) // ID
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             tBTSUzolPtr tmpNode = TSreadSymbol(token.data);
             if(tmpNode == NULL) //pokud jsem nenarazil na volani funkce
@@ -1628,23 +1574,18 @@ tError argsNext()
                 if(error != EOK)
                     return error;
 
-                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
             }
             else
             {
                 isWriteFunc = true;
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 //dataStromu.typ = tDouble;
 
                 if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1676,10 +1617,6 @@ tError argsNext()
         else if (isPrint == false) //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-            if (nazev == NULL)
-                {
-                    return EOST;
-                }
             sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
             tBTSUzolPtr tmpNode = TSreadSymbol(nazev);
             if(tmpNode == NULL) //jmeno neni v tabulce
@@ -1706,29 +1643,24 @@ tError argsNext()
     }
     else if((token.stav == DOUBLE))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1752,28 +1684,24 @@ tError argsNext()
     }
     else if((token.stav == INTEGER))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
-            char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro stringif (nazev == NULL)
-            {
-                return EOST;
-            }
+            char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1797,29 +1725,24 @@ tError argsNext()
     }
     else if((token.stav == EXP))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.d = atof(token.data); //prevedu string na hodnotu
             dataStromu.typ = tDouble; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1843,29 +1766,24 @@ tError argsNext()
     }
     else if((token.stav == RETEZEC))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-            if (nazev == NULL)
-            {
-                return EOST;
-            }
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
             tSymbol dataStromu; //vlozim do stromu jmeno funkce
             TSinitSymbol(&dataStromu);
             dataStromu.varFc = false;
-            dataStromu.nazov = nazev;
+            dataStromu.nazev = nazev;
             dataStromu.value.s = token.data; //prevedu string na hodnotu
             dataStromu.typ = tString; //typ je double
             if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1891,29 +1809,25 @@ tError argsNext()
     {
         if((!strcmp(token.data, "true")) || (!strcmp(token.data, "false")))
         {
-            if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+            if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
             {
                 error = pparser();
 
                 if(error != EOK)
                     return error;
 
-                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
             }
             else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
             {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
 
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 if(!(strcmp(token.data, "true")))
                     dataStromu.value.b = true; //prevedu string na hodnotu
                 else dataStromu.value.b = false;
@@ -1941,14 +1855,14 @@ tError argsNext()
     }
     else if((token.stav == MINUS))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
         {
@@ -1956,20 +1870,15 @@ tError argsNext()
             if(error != EOK)
                 return error;
 
-            if((token.stav == DOUBLE) || (token.stav == INTEGER) || (token.stav == EXP))
+            if((token.stav == DOUBLE) || (token.stav == EXP))
             {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
-                if (nazev == NULL)
-                {
-                    return EOST;
-                }
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
-
                 tSymbol dataStromu; //vlozim do stromu jmeno funkce
                 TSinitSymbol(&dataStromu);
                 dataStromu.varFc = false;
-                dataStromu.nazov = nazev;
+                dataStromu.nazev = nazev;
                 dataStromu.value.d = (atof(token.data))*(-1); //prevedu string na hodnotu
                 dataStromu.typ = tDouble; //typ je double
                 if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
@@ -1991,19 +1900,50 @@ tError argsNext()
                 }
 
             }
+            if((token.stav == INTEGER) || (token.stav == EXP))
+            {
+                nameID++; //prictu k pocitadlu
+                char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
+                sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
+                tSymbol dataStromu; //vlozim do stromu jmeno funkce
+                TSinitSymbol(&dataStromu);
+                dataStromu.varFc = false;
+                dataStromu.nazev = nazev;
+                dataStromu.value.i = (atoi(token.data))*(-1); //prevedu string na hodnotu
+                dataStromu.typ = tInt; //typ je int
+                if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
+                {
+                    return ESEM;
+                }
+                else TSvlozSymbol(dataStromu); //jinak vloz do tabulky
+
+                if(isAsc || isChr || isSubs || isLength)
+                {
+                    pole_argumentu[(*cislo_argumentu)]=TSreadSymbol(nazev);
+                    (*cislo_argumentu)++;
+                }
+                else
+                {
+                    volana_fce = volana_fce->data.nextNode;
+                    ta_Insert(&ta, I_ASSIGN, TSreadSymbol(nazev), NULL, volana_fce);
+
+                }
+
+            }
+
             else return ESEM;
         }
     }
     else if(token.stav == LEVA_ZAVORKA) // ID
     {
-        if(isWrite) //pokud potrebuji zavolat vyhodnoceni vyrazu u write()
+        if(isWrite) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
         {
             error = pparser();
 
             if(error != EOK)
                 return error;
 
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazov),NULL, NULL);
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
         }
         else return ESYN;
     }
@@ -2039,12 +1979,8 @@ tError params()// pocet parametru funkce
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = false;
         char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-        if (nazev == NULL)
-        {
-            return EOST;
-        }
         sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
         {
             fprintf(stderr, "Identifikator: \"%s\" byl jiz deklarovan\n", token.data);
@@ -2110,12 +2046,8 @@ tError paramsNext()
         TSinitSymbol(&dataStromu);
         dataStromu.varFc = false;
         char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-        if (nazev == NULL)
-        {
-            return EOST;
-        }
         sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
-        dataStromu.nazov = nazev;
+        dataStromu.nazev = nazev;
         if((TSreadSymbol(nazev)) != NULL) //pokud uz jmeno bylo v tabulce
         {
             fprintf(stderr, "Identifikator: \"%s\" byl jiz deklarovan\n", token.data);
@@ -2160,10 +2092,10 @@ void najdiKolize(tBTSUzolPtr uzel)// TEST JESTLI NENI FUNKCE DVAKRAT DEKLAROVANA
     if(error != EOK)
         return ;
 
-    if((uzel->kluc[0] != '#') && (uzel->kluc[0] != '@')) //pokud jsem nasel uzel s funkci
+    if((uzel->klic[0] != '#') && (uzel->klic[0] != '@')) //pokud jsem nasel uzel s funkci
     {
-        char *nazev = advMalloc(strlen(uzel->kluc)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-        sprintf(nazev,"#%s#%s", uzel->kluc, token.data); //vlozim string do promenne
+        char *nazev = advMalloc(strlen(uzel->klic)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
+        sprintf(nazev,"#%s#%s", uzel->klic, token.data); //vlozim string do promenne
         if((TSreadSymbol(nazev)) != NULL) //promenna uz existuje
             error = ESEM;
         else

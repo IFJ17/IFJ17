@@ -1,3 +1,13 @@
+/**
+ * Predmet: IFJ / IAL
+ * Projekt: Implementace prekladace imperativniho jazyka IFJ17
+ * Varianta:Tym 031, varianta I
+ * Soubor:   instrukce.c
+ * Autori:  Kozouskova Aneta	<xkozou00@stud.fit.vutbr.cz>,
+ *          Sencuch Filip	    <xsencu01@stud.fit.vutbr.cz>,
+ *          Nguyen QuangTrang	<xnguye11@stud.fit.vutbr.cz>,
+ *          Pribyl Tomas	    <xpriby17@stud.fit.vutbr.cz>
+ */
 
 #include "instrukce.h"
 #include "lexikalni_analyzator.h"
@@ -16,11 +26,6 @@
 void find_labels(TA_Item **ta_table, int **jump_array)// hledani navesti kam se ma skocit
 {
     *jump_array = advRealloc(*jump_array, ALL_MORE * sizeof(int));
-    if (jump_array == NULL)
-    {
-        error = EOST;
-        return;
-    }
     int jump = 0;
     index_pb = 0;
     int a_size = ALL_MORE;
@@ -1041,11 +1046,6 @@ void instrukce(TA_Item **ta_table, tBTSUzolPtr root)
             if((index_pb % 9) == 0) /*naalokovat jinak*/
             {
                 pole_back = advRealloc( pole_back, index_pb*sizeof(int)+ALL_MORE);
-                if (pole_back == NULL)
-                {
-                    error = EOST;
-                    return;
-                }
             }
 
             position = jump_array[(*ta_table)[position].jump];

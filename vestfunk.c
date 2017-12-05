@@ -1,3 +1,14 @@
+/**
+ * Predmet: IFJ / IAL
+ * Projekt: Implementace prekladace imperativniho jazyka IFJ17
+ * Varianta:Tym 031, varianta I
+ * Soubor:   vestfunk.c
+ * Autori:  Kozouskova Aneta	<xkozou00@stud.fit.vutbr.cz>,
+ *          Sencuch Filip	    <xsencu01@stud.fit.vutbr.cz>,
+ *          Nguyen QuangTrang	<xnguye11@stud.fit.vutbr.cz>,
+ *          Pribyl Tomas	    <xpriby17@stud.fit.vutbr.cz>
+ */
+
 #include "ial.h"
 #include "vestfunk.h"
 #include "vyrazy.h"
@@ -118,10 +129,6 @@ tBTSUzolPtr Substr(tBTSUzolPtr input, tBTSUzolPtr node_start, tBTSUzolPtr node_e
     else
     {
         strPtr = advMalloc(sizeof(char)*(end-start)+1);
-        if (strPtr == NULL)
-        {
-            error = EOST;
-        }
         for (int i = start; i < end; i++)
         {
             strPtr[j] = inString[i];
@@ -130,21 +137,12 @@ tBTSUzolPtr Substr(tBTSUzolPtr input, tBTSUzolPtr node_start, tBTSUzolPtr node_e
         strPtr[j+1] = '\0';
     }
     char* str = advMalloc(sizeof(char)*25);
-    if (str == NULL)
-        {
-            error = EOST;
-        }
     tSymbol ptr;
     TSinitSymbol(&ptr);
-    ptr.nazov = str;
+    ptr.nazev = str;
     ptr.varFc = false;
     char* ret = advMalloc(sizeof(char)*strlen(strPtr)+1);
-    if (ret == NULL)
-        {
-            error = EOST;
-        }
     strcpy(ret, strPtr);
-
     ptr.value.s = ret;
     ptr.typ = tString;
 
@@ -188,13 +186,9 @@ tBTSUzolPtr Asc(tBTSUzolPtr input, tBTSUzolPtr index)
     }
 
     char* str = advMalloc(sizeof(char)*25);
-    if (str == NULL)
-        {
-            error = EOST;
-        }
     tSymbol ptr;
     TSinitSymbol(&ptr);
-    ptr.nazov = str;
+    ptr.nazev = str;
     ptr.varFc = false;
     ptr.value.i = number;
     ptr.typ = tInt;
@@ -221,13 +215,9 @@ tBTSUzolPtr Chr(tBTSUzolPtr input)
     asci = number + 'a' - 97;
 
     char* str = advMalloc(sizeof(char)*25);
-    if (str == NULL)
-        {
-            error = EOST;
-        }
     tSymbol ptr;
     TSinitSymbol(&ptr);
-    ptr.nazov = str;
+    ptr.nazev = str;
     ptr.varFc = false;
     ptr.value.i = asci;
     ptr.typ = tString;
@@ -249,14 +239,9 @@ tBTSUzolPtr Length(tBTSUzolPtr input)
     char *instring = input->data.value.s;
     int len = strlen(instring);
     char* str = advMalloc(sizeof(char)*25);
-    if (str == NULL)
-        {
-            error = EOST;
-        }
-
     tSymbol ptr;
     TSinitSymbol(&ptr);
-    ptr.nazov = str;
+    ptr.nazev = str;
     ptr.varFc = false;
     ptr.value.i = len;
     ptr.typ = tInt;

@@ -1,4 +1,15 @@
 
+/**
+ * Predmet: IFJ / IAL
+ * Projekt: Implementace prekladace imperativniho jazyka IFJ17
+ * Varianta:Tym 031, varianta I
+ * Soubor:   vyrazy.c
+ * Autori:  Kozouskova Aneta	<xkozou00@stud.fit.vutbr.cz>,
+ *          Sencuch Filip	    <xsencu01@stud.fit.vutbr.cz>,
+ *          Nguyen QuangTrang	<xnguye11@stud.fit.vutbr.cz>,
+ *          Pribyl Tomas	    <xpriby17@stud.fit.vutbr.cz>
+ */
+
  /* Hlavickove soubory
  */
 #include "vyrazy.h"
@@ -28,10 +39,9 @@ void VSpush(tVZasobnik *zasobnik, tData item)
     pom = advMalloc(sizeof(struct tZasPrvek));
     if (pom == NULL)
     {
-        error = ETYP;
+        error = EOST;
         return;
     }
-
     // nastavime hodnoty
     pom->item = item;
     pom->ptr = zasobnik->vrchol;
@@ -165,12 +175,8 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
         sloupec->data.typ = tInt; //inicializace hodnot pro vlozeni do TS
         sloupec->data.value.d = atoi(token.data);
         char *nazev = advMalloc(sizeof(char)*25);	//generovani klice pro TS
-        if (nazev == NULL)
-        {
-            error = ETYP;
-        }
         sprintf(nazev,"@prom_%u",nameID++);
-        sloupec->data.nazov = nazev;
+        sloupec->data.nazev = nazev;
         if((TSreadSymbol(nazev)) != NULL)  //pokud uz jmeno bylo v tabulce
         {
             return ESEM;
@@ -186,12 +192,8 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
         sloupec->data.typ = tDouble; //inicializace hodnot pro vlozeni do TS
         sloupec->data.value.d = atof(token.data);
         char *nazev1 = advMalloc(sizeof(char)*25);	//generovani klice pro TS
-        if (nazev1 == NULL)
-        {
-            error = ETYP;
-        }
         sprintf(nazev1,"@prom_%u",nameID++);
-        sloupec->data.nazov = nazev1;
+        sloupec->data.nazev = nazev1;
         if((TSreadSymbol(nazev)) != NULL)  //pokud uz jmeno bylo v tabulce
         {
             return ESEM;
@@ -208,12 +210,8 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
             sloupec->data.value.s = token.data;
         else sloupec->data.value.s = "\0";
         char *str = advMalloc(sizeof(char)*25);
-        if (str== NULL)
-        {
-            error = ETYP;
-        }
         sprintf(str,"@prom_%u",nameID++);
-        sloupec->data.nazov = str;
+        sloupec->data.nazev = str;
         if((TSreadSymbol(str)) != NULL)  //pokud uz jmeno bylo v tabulce
         {
             fprintf(stderr,"2nemuzeme vlozit, stejna promenna\n");
@@ -235,10 +233,6 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
         else
         {
             nazevModif = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
-            if (nazevModif == NULL)
-            {
-                error = ETYP;
-            }
             if(functionName != NULL && token.data !=NULL)
                 sprintf(nazevModif,"#%s#%s", functionName, token.data);//vlozim string do promenne
             if((pom = TSreadSymbol(nazevModif)) == NULL)   //pokud neni bylo v tabulce
@@ -247,7 +241,7 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
                 return ESEM;
             }
             sloupec->p = ID;
-            sloupec->data.nazov = pom->data.nazov;
+            sloupec->data.nazev = pom->data.nazev;
             sloupec->data.typ = pom->data.typ;
             sloupec->data.nextNode=pom->data.nextNode;
         }
@@ -264,12 +258,8 @@ tError fetchIndex(tToken token, tData *sloupec, int *counter)
                 sloupec->data.value.b = true;  //prevedu string na hodnotu
             else sloupec->data.value.b = false;
             char *b = advMalloc(sizeof(char)*25);
-            if (b == NULL)
-            {
-                error = ETYP;
-            }
             sprintf(b,"@prom_%u",nameID++);
-            sloupec->data.nazov = b;
+            sloupec->data.nazev = b;
             if((TSreadSymbol(b)) != NULL)  //pokud uz jmeno bylo v tabulce
             {
                 fprintf(stderr,"5nemuzeme vlozit, stejna promenna\n");
@@ -413,10 +403,6 @@ tError redukce(tVZasobnik *zasobnik, tVZasobnik *zasobnik2 )
                 perator = I_DIVD;
                 ok = 1;
                 break;
-            /*case MOCNINA:
-                perator = I_POW;
-                ok = 1;
-                break;*/
             case ROVNITKO:
                 perator = I_EQUAL;
                 ok = 1;
@@ -467,21 +453,17 @@ tError redukce(tVZasobnik *zasobnik, tVZasobnik *zasobnik2 )
                         (perator == I_DIVD) ||
                         (perator == I_DIVC))
                 {
-                    //pokud nemame konkatenaci
+                    //pokud mame int
                     if((jeInt == 1) && (jeDouble == 0))
                     {
                         neterm.data.typ = tInt;  //vysledny neterminal bude double
                         neterm.p = NETERM;
                         char *aritm = advMalloc(sizeof(char)*25);
-                        if (aritm == NULL)
-                        {
-                            error = ETYP;
-                        }
                         sprintf(aritm,"@prom_%u",nameID++);
-                        neterm.data.nazov = aritm;
+                        neterm.data.nazev = aritm;
                         VSpush(zasobnik, neterm); //a vlozime E
                         TSvlozSymbol(neterm.data);
-                        ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazov),TSreadSymbol(pom4.data.nazov), TSreadSymbol(neterm.data.nazov));
+                        ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazev),TSreadSymbol(pom4.data.nazev), TSreadSymbol(neterm.data.nazev));
                         jeInt = 0;
                         return EOK;
                     }
@@ -490,15 +472,11 @@ tError redukce(tVZasobnik *zasobnik, tVZasobnik *zasobnik2 )
                         neterm.data.typ = tDouble;  //vysledny neterminal bude double
                         neterm.p = NETERM;
                         char *aritm = advMalloc(sizeof(char)*25);
-                        if (aritm == NULL)
-                        {
-                            error = ETYP;
-                        }
                         sprintf(aritm,"@prom_%u",nameID++);
-                        neterm.data.nazov = aritm;
+                        neterm.data.nazev = aritm;
                         VSpush(zasobnik, neterm); //a vlozime E
                         TSvlozSymbol(neterm.data);
-                        ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazov),TSreadSymbol(pom4.data.nazov), TSreadSymbol(neterm.data.nazov));
+                        ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazev),TSreadSymbol(pom4.data.nazev), TSreadSymbol(neterm.data.nazev));
                         jeDouble = 0;
                         jeInt = 0;
                         return EOK;
@@ -516,15 +494,11 @@ tError redukce(tVZasobnik *zasobnik, tVZasobnik *zasobnik2 )
                     neterm.data.typ = tBool;
                     neterm.p = NETERM;
                     char *por = advMalloc(sizeof(char)*25);
-                    if (por == NULL)
-                        {
-                            error = ETYP;
-                        }
                     sprintf(por,"@prom_%u",nameID++);
-                    neterm.data.nazov = por;
+                    neterm.data.nazev = por;
                     VSpush(zasobnik, neterm); //a vlozime E
                     TSvlozSymbol(neterm.data);
-                    ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazov),TSreadSymbol(pom4.data.nazov), TSreadSymbol(neterm.data.nazov));
+                    ta_Insert(&ta, perator, TSreadSymbol(pom2.data.nazev),TSreadSymbol(pom4.data.nazev), TSreadSymbol(neterm.data.nazev));
                     return EOK;
                 }
                 else
