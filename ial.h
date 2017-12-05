@@ -25,6 +25,7 @@ typedef enum            // enumerace pro interni typy symbolu
     tBool,
     tDouble,
     tString,
+    tInt,
 } tTypSymbolu;
 
 typedef union               // unie pro data symbolu
@@ -32,6 +33,7 @@ typedef union               // unie pro data symbolu
     bool b;
     double d;
     char *s;
+    int i;
 } tObsah;
 
 typedef struct   // symbol
@@ -67,6 +69,7 @@ void TSinitSymbol(tSymbol *symbol);             // inicializuje symbol pri dekla
 tSymbol *TSvlozSymbol(tSymbol data);              // vlozi symbol do tabulky
 tSymbol *TSvlozBool(tNazov nazev, bool data);
 tSymbol *TSvlozDouble(tNazov nazev, double data);
+tSymbol *TSvlozInt(tNazov nazev, int data);
 tSymbol *TSvlozString(tNazov nazev, char *string);
 tBTSUzolPtr TSreadSymbol(tNazov nazev);              // precte symbol z tabulky
 void ialSort(char *string);                     // funkce potrebna poe nas
