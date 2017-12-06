@@ -11,6 +11,8 @@
 #define POKRACUJ 0
 #define STOP 1
 
+tToken token;
+
 static void rozsirToken(int znak, int *i);   //prototypy funkci
 static void vratZnak(int znak);
 static tStav prejdiRezervovaneSlova(char *slovo);
