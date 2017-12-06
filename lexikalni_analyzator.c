@@ -1,6 +1,6 @@
 
 #include <ctype.h>
-//#include "garbage_collector.h"
+#include "garbage_collector.h"
 #include "lexikalni_analyzator.h"
 #include "funkce.h"
 #include <stdio.h>
