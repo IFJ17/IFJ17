@@ -426,7 +426,7 @@ tError body()
 /**
  * <list>        ->  EPS
  * <list>	->  ID <prirazeni> "eol"
- * <list>	->  "print" <print>, <list>
+ * <list>	->  "print" <print>; <list>
  * <list>	->  "if" <expr> "then" "eol" <list> "else" "eol" <list> "end" "if" <list>
  * <list>	->  "dowhile" <expr> "eol" <list> "loop" "eol" <list>
  * <list>	->  "return" <expr> "eol"
@@ -709,7 +709,7 @@ tError list()
 
 
 /**
- * <print>		->	"(" <expr> ")" "eol"
+ * <print>		->	<expr>;
  */
 tError print()
 {
@@ -728,11 +728,10 @@ tError print()
     if(error != EOK)
         return error;
 
-    if(token.stav != EOL) //musi byt "\n"
+    if(token.stav != STREDNIK) //musi byt ";"
         return ESYN;
 
-
-    isPrint = false; //uz nejsem ve funkci write, tak nevyhodnocuji vyrazy
+    isPrint = false; //uz nejsem ve funkci print, tak nevyhodnocuji vyrazy
     return error;
 }
 
@@ -1152,7 +1151,7 @@ tError litExpr() // muzeme priradit k promenne bud funkci, hodnotu promenne, hod
             if(error != EOK)
                 return error;
 
-            if(isWrite == false)
+            if(isPrint == false)
             {
                 if(token.stav != PRAVA_ZAVORKA) // ")"
                     return ESYN;
@@ -1199,6 +1198,11 @@ tError args()
     getToken(); //pokusim se nacist ID
     if(error != EOK)
         return error;
+    if (isPrint == true)
+    {
+        if (token.stav == EOL)
+            return error;
+    }
 
     if(token.stav == PRAVA_ZAVORKA) // ")" //funkce nema zadne parametry
         return error;
@@ -1546,25 +1550,17 @@ tError args()
 }
 tError argsNext()
 {
-    if(isPrint == false) //pokud jsme ve write, tak token byl uz nacten v pparser()
-        getToken();
-
-    if(error != EOK)
-        return error;
-
-    if(token.stav == PRAVA_ZAVORKA) // ")" //funkce nema dalsi parametry
-        return error;
-
-    if(token.stav != CARKA) // "," //ted musi byt carka
-        return ESYN;      //<params_next>	->	"," ID <params_next>
-
-    getToken();
-    if(error != EOK)
-        return error;
-
-    if(token.stav == IDENTIFIK) // ID
+    if (isPrint == true) //pokud jsme ve print, tak token byl uz nacten v pparser()
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
+        if(error != EOK)
+        return error;
+
+        if(token.stav == EOL) // print nema dalsi parametry
+            return error;
+
+        if(token.stav != STREDNIK) // musi nasledovat ;
+            return ESYN;
+        if(token.stav == IDENTIFIK) // ID
         {
             tBTSUzolPtr tmpNode = TSreadSymbol(token.data);
             if(tmpNode == NULL) //pokud jsem nenarazil na volani funkce
@@ -1605,17 +1601,80 @@ tError argsNext()
                 //ta_Insert(&ta, I_ASSIGN, tmpNode, NULL, cilovaAdresa);
                 cilovaAdresa = tmpCil;
                 isWriteFunc = false;
-                isWrite = true;
+                isPrint = true;
                 getToken();
                 if(error != EOK)
                     return error;
-
-                //if(token.stav != CARKA) // ","
-                // return ESYN;
+                }
             }
-        }
-        else if (isPrint == false) //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
+         else if((token.stav == DOUBLE))
+            {
+                error = pparser();
+
+                if(error != EOK)
+                return error;
+
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
+            }
+         else if((token.stav == INTEGER))
+            {
+                error = pparser();
+                if(error != EOK)
+                    return error;
+
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
+            }
+        else if((token.stav == EXP))
+            {
+                error = pparser();
+                if(error != EOK)
+                    return error;
+                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
+            }
+        else if((token.stav == RETEZEC))
         {
+             error = pparser();
+
+            if(error != EOK)
+                return error;
+
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
+        }
+        else if((token.stav == MINUS))
+        {
+             error = pparser();
+
+            if(error != EOK)
+                return error;
+
+            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
+        }
+        else return ESEM;
+
+     error = argsNext();
+    if(error != EOK)
+        return error;
+
+    return error;
+    }
+
+else // pokud se nejedna o vyraz nactem token toje mame argument funkce
+    {
+        getToken();
+
+    if(error != EOK)
+        return error;
+    if(token.stav == PRAVA_ZAVORKA) // ")" //funkce nema dalsi parametry
+        return error;
+    if(token.stav != CARKA) // "," //ted musi byt carka
+        return ESYN;      //<params_next>	->	"," ID <params_next>
+
+    getToken();
+    if(error != EOK)
+        return error;
+
+    if(token.stav == IDENTIFIK) // ID
+    {
             char *nazev = advMalloc(strlen(functionName)+(strlen(token.data))+3); //delka funkce + delka promenne + 2*# + 1*\0
             sprintf(nazev,"#%s#%s", functionName, token.data); //vlozim string do promenne
             tBTSUzolPtr tmpNode = TSreadSymbol(nazev);
@@ -1639,21 +1698,9 @@ tError argsNext()
                 ta_Insert(&ta, I_ASSIGN, tmpNode, NULL, volana_fce);
 
             }
-        }
     }
     else if((token.stav == DOUBLE))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
-
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-        {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
@@ -1680,21 +1727,9 @@ tError argsNext()
                 ta_Insert(&ta, I_ASSIGN, TSreadSymbol(nazev), NULL, volana_fce);
 
             }
-        }
     }
     else if((token.stav == INTEGER))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
-
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-        {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
@@ -1721,21 +1756,9 @@ tError argsNext()
                 ta_Insert(&ta, I_ASSIGN, TSreadSymbol(nazev), NULL, volana_fce);
 
             }
-        }
     }
     else if((token.stav == EXP))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
-
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-        {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
@@ -1762,21 +1785,9 @@ tError argsNext()
                 ta_Insert(&ta, I_ASSIGN, TSreadSymbol(nazev), NULL, volana_fce);
 
             }
-        }
     }
     else if((token.stav == RETEZEC))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
-
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-        {
             nameID++; //prictu k pocitadlu
             char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
             sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
@@ -1803,23 +1814,9 @@ tError argsNext()
                 ta_Insert(&ta, I_ASSIGN, TSreadSymbol(nazev), NULL, volana_fce);
 
             }
-        }
     }
     else if((token.stav == KLIC_SLOVO))
     {
-        if((!strcmp(token.data, "true")) || (!strcmp(token.data, "false")))
-        {
-            if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-            {
-                error = pparser();
-
-                if(error != EOK)
-                    return error;
-
-                ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-            }
-            else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-            {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
                 sprintf(nazev,"@prom_%u",nameID++); //vlozim string do promenne
@@ -1850,22 +1847,9 @@ tError argsNext()
 
                 }
 
-            }
-        }
     }
     else if((token.stav == MINUS))
     {
-        if(isPrint) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
-
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else //jinak se jedna o argumenty funkci, ktere nejsou vyrazy
-        {
             getToken();
             if(error != EOK)
                 return error;
@@ -1900,7 +1884,7 @@ tError argsNext()
                 }
 
             }
-            if((token.stav == INTEGER) || (token.stav == EXP))
+            else if(token.stav == INTEGER)
             {
                 nameID++; //prictu k pocitadlu
                 char *nazev = advMalloc(sizeof(char)*25); //alokuji pamet pro string
@@ -1932,21 +1916,8 @@ tError argsNext()
             }
 
             else return ESEM;
-        }
     }
-    else if(token.stav == LEVA_ZAVORKA) // ID
-    {
-        if(isWrite) //pokud potrebuji zavolat vyhodnoceni vyrazu u print()
-        {
-            error = pparser();
 
-            if(error != EOK)
-                return error;
-
-            ta_Insert(&ta, I_PRINT, TSreadSymbol(neterm.data.nazev),NULL, NULL);
-        }
-        else return ESYN;
-    }
     else return ESEM;
 
     error = argsNext();
@@ -1954,6 +1925,7 @@ tError argsNext()
         return error;
 
     return error;
+    }
 }
 
 /**
